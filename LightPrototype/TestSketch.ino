@@ -6,8 +6,10 @@ constexpr int happy {A0};
 constexpr int bored {A1};
 constexpr int sad {A2};
 
-int lastEmotion {happy}; // initialized with happy.
+int previousEmotion {happy};
+int currentEmotion {happy};
 int threshold { 50 }; // value required to change the light preventing natural missvalues.
+bool isChanged {true}; // this value is set so it turns on the lights only the first time of changes.
 
 double v_happy {};
 double v_bored {};
@@ -30,19 +32,31 @@ void loop() {
 }
 
 void turnOnCurrentLight(){
-  switch(lastEmotion){
-    case happy:
-      happyLight();
-      break;
-    case bored:
-      boredLight();
-      break;
-    case sad:
-      sadLight();
-      break;
-    default:
-      happyLight();
-      break;
+  if(isChanged){
+    switch(currentEmotion){
+        case happy:
+          happyLight();
+          isChanged = false;
+          break;
+        case bored:
+          boredLight();
+          isChanged = false;
+          break;
+        case sad:
+          sadLight();
+          isChanged = false;
+          break;
+        default:
+          happyLight();
+          isChanged = false;
+          break;
+      }
+  } 
+}
+
+void updateIsChanged(){
+  if(currentEmotion != previousEmotion){
+    isChanged = true;
   }
 }
 
@@ -53,13 +67,19 @@ void handleLastInput(){
 
   // this changes if a bottom is pressed 
   if(v_happy > threshold){
-    lastEmotion = happy;
+    currentEmotion = happy;
+    updateIsChanged();
+    previousEmotion = currentEmotion;
     return;
   } else if (v_sad > threshold){
-    lastEmotion = sad;
+    currentEmotion = sad;
+    updateIsChanged();
+    previousEmotion = currentEmotion;
     return;
   } else if (v_bored > threshold){
-    lastEmotion = bored;
+    currentEmotion = bored;
+    updateIsChanged();
+    previousEmotion = currentEmotion;
     return;
   }
 
@@ -68,21 +88,30 @@ void handleLastInput(){
 }
 
 void happyLight(){
-  analogWrite(b, 255);
-  analogWrite(g, 255);
-  analogWrite(r, 0);
+  for(int i = 0; i <= 255; i++){
+    analogWrite(b, i);
+    analogWrite(g, i);
+    analogWrite(r, 0);
+    delay(5);
+  }
 }
 
 void sadLight(){
-  analogWrite(b, 250);
-  analogWrite(g, 0);
-  analogWrite(r, 255);
+  for(int i = 0; i <= 255; i++){
+    analogWrite(b, i);
+    analogWrite(g, 0);
+    analogWrite(r, i);
+    delay(5);
+  }
 }
 
 void boredLight(){
-  analogWrite(b, 255);
-  analogWrite(g, 255);
-  analogWrite(r, 255);
+  for(int i = 0; i <= 255; i++){
+    analogWrite(b, i);
+    analogWrite(g, i);
+    analogWrite(r, i);
+    delay(5);
+  }
 }
 
 
